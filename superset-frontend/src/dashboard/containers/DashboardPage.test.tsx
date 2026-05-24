@@ -37,7 +37,7 @@ const mockTheme = {
 const mockDashboard = {
   id: 1,
   slug: null,
-  url: '/superset/dashboard/1/',
+  url: '/dashboard/1/',
   dashboard_title: 'Test Dashboard',
   thumbnail_url: null,
   published: true,

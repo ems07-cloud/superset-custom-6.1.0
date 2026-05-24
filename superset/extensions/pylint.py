@@ -55,8 +55,8 @@ class SQLParsingLibraryImportChecker(BaseChecker):
 
         # Allow sqlglot inside superset/sql and in the config
         allowed = {
-            "**/superset/sql/**/*.py",
-            "**/superset/sql/*.py",
+            "**/sql/**/*.py",
+            "**/sql/*.py",
             "**/superset/config.py",
         }
         valid = any(file_path.match(pattern) for pattern in allowed)

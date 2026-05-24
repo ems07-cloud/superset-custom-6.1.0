@@ -139,7 +139,7 @@ test('makeUrl should work with different subdirectory paths', async () => {
   const { makeUrl } = await import('./pathUtils');
 
   expect(makeUrl('/sqllab')).toBe('/my-app/superset/sqllab');
-  expect(makeUrl('/dashboard/list')).toBe('/my-app/superset/dashboard/list');
+  expect(makeUrl('/dashboard/list')).toBe('/my-app/dashboard/list');
 });
 
 test('makeUrl should handle URLs with anchors', async () => {
@@ -155,7 +155,7 @@ test('makeUrl should handle URLs with anchors', async () => {
   const { makeUrl } = await import('./pathUtils');
 
   expect(makeUrl('/dashboard/123#anchor')).toBe(
-    '/superset/dashboard/123#anchor',
+    '/dashboard/123#anchor',
   );
 });
 

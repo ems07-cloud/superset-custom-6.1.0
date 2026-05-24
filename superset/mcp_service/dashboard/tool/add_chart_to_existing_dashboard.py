@@ -508,7 +508,7 @@ def add_chart_to_existing_dashboard(
                     exc_info=True,
                 )
             dashboard_url = (
-                f"{get_superset_base_url()}/superset/dashboard/{updated_dashboard.id}/"
+                f"{get_superset_base_url()}/dashboard/{updated_dashboard.id}/"
             )
             position_info = {
                 "row": row_key,
@@ -545,7 +545,7 @@ def add_chart_to_existing_dashboard(
             created_by=updated_dashboard.created_by_name or None,
             changed_by=updated_dashboard.changed_by_name or None,
             uuid=str(updated_dashboard.uuid) if updated_dashboard.uuid else None,
-            url=f"{get_superset_base_url()}/superset/dashboard/{updated_dashboard.id}/",
+            url=f"{get_superset_base_url()}/dashboard/{updated_dashboard.id}/",
             chart_count=len(updated_dashboard.slices),
             owners=[
                 serialize_user_object(owner)
@@ -566,7 +566,7 @@ def add_chart_to_existing_dashboard(
         )
 
         dashboard_url = (
-            f"{get_superset_base_url()}/superset/dashboard/{updated_dashboard.id}/"
+            f"{get_superset_base_url()}/dashboard/{updated_dashboard.id}/"
         )
 
         logger.info(

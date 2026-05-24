@@ -393,7 +393,7 @@ test('dispatches removeChartState when saving and going to dashboard', async () 
 
   // Mock the dashboard API response
   const dashboardId = 123;
-  const dashboardUrl = '/superset/dashboard/test-dashboard/';
+  const dashboardUrl = '/dashboard/test-dashboard/';
   fetchMock.get(`glob:*/api/v1/dashboard/${dashboardId}*`, {
     result: {
       id: dashboardId,
