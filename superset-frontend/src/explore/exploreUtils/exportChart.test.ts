@@ -165,7 +165,7 @@ test('exportChart legacy API (useLegacyApi=true) passes prefixed URL with app ro
 
   expect(onStartStreamingExport).toHaveBeenCalledTimes(1);
   const callArgs = onStartStreamingExport.mock.calls[0][0];
-  expect(callArgs.url).toBe('/superset/superset/explore_json/?csv=true');
+  expect(callArgs.url).toBe('/superset/explore_json/?csv=true');
   expect(callArgs.exportType).toBe('csv');
 });
 
@@ -190,7 +190,7 @@ test('exportChart legacy API builds relative URL for CSV export without app root
 
   expect(onStartStreamingExport).toHaveBeenCalledTimes(1);
   const callArgs = onStartStreamingExport.mock.calls[0][0];
-  expect(callArgs.url).toBe('/superset/explore_json/?csv=true');
+  expect(callArgs.url).toBe('/explore_json/?csv=true');
 });
 
 test('exportChart legacy API builds relative URL for xlsx export', async () => {
@@ -215,7 +215,7 @@ test('exportChart legacy API builds relative URL for xlsx export', async () => {
 
   expect(onStartStreamingExport).toHaveBeenCalledTimes(1);
   const callArgs = onStartStreamingExport.mock.calls[0][0];
-  expect(callArgs.url).toBe('/superset/explore_json/?xlsx=true');
+  expect(callArgs.url).toBe('/explore_json/?xlsx=true');
 });
 
 test('exportChart legacy API calls postForm with relative URL', async () => {
@@ -239,7 +239,7 @@ test('exportChart legacy API calls postForm with relative URL', async () => {
 
   expect(SupersetClient.postForm).toHaveBeenCalledTimes(1);
   const [url] = SupersetClient.postForm.mock.calls[0];
-  expect(url).toBe('/superset/explore_json/?csv=true');
+  expect(url).toBe('/explore_json/?csv=true');
   expect(url).not.toMatch(/^https?:\/\//);
 });
 
@@ -265,5 +265,5 @@ test('exportChart legacy API includes force param when force=true', async () => 
 
   expect(onStartStreamingExport).toHaveBeenCalledTimes(1);
   const callArgs = onStartStreamingExport.mock.calls[0][0];
-  expect(callArgs.url).toBe('/superset/explore_json/?force=true&csv=true');
+  expect(callArgs.url).toBe('/explore_json/?force=true&csv=true');
 });

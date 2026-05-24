@@ -33,7 +33,7 @@ export const mockHandleResourceExport =
 export const mockCharts = [
   {
     id: 0,
-    url: '/superset/slice/0/',
+    url: '/slice/0/',
     viz_type: 'table',
     slice_name: 'Test Chart 0',
 
@@ -72,7 +72,7 @@ export const mockCharts = [
   },
   {
     id: 1,
-    url: '/superset/slice/1/',
+    url: '/slice/1/',
     viz_type: 'bar',
     slice_name: 'Test Chart 1',
 
@@ -119,7 +119,7 @@ export const mockCharts = [
   },
   {
     id: 2,
-    url: '/superset/slice/2/',
+    url: '/slice/2/',
     viz_type: 'line',
     slice_name: 'Test Chart 2',
 
@@ -150,7 +150,7 @@ export const mockCharts = [
   },
   {
     id: 3,
-    url: '/superset/slice/3/',
+    url: '/slice/3/',
     viz_type: 'area',
     slice_name: 'Test Chart 3',
 
@@ -189,7 +189,7 @@ export const mockCharts = [
   },
   {
     id: 4,
-    url: '/superset/slice/4/',
+    url: '/slice/4/',
     viz_type: 'bubble',
     slice_name: 'Test Chart 4',
 
