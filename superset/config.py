@@ -363,6 +363,10 @@ APP_ICON = "/static/custom-logo.svg"
 # or you can specify a full URL e.g. 'https://foo.bar'
 LOGO_TARGET_PATH = None
 
+SUPERSET_DEFAULT_DASHBOARD_ID: str | None = os.environ.get(
+    "SUPERSET_DEFAULT_DASHBOARD_ID"
+)
+
 # Specify tooltip that should appear when hovering over the App Icon/Logo
 LOGO_TOOLTIP = ""
 
