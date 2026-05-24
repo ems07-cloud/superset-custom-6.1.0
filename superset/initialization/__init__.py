@@ -978,6 +978,14 @@ class SupersetAppInitializer:  # pylint: disable=too-many-public-methods
 class SupersetIndexView(IndexView):
     @expose("/")
     def index(self) -> FlaskResponse:
+        default_dashboard_id = current_app.config.get("SUPERSET_DEFAULT_DASHBOARD_ID")
+        if default_dashboard_id:
+            return redirect(
+                url_for(
+                    "Superset.dashboard",
+                    dashboard_id_or_slug=str(default_dashboard_id),
+                )
+            )
         return redirect(url_for("Superset.welcome"))
 
     @expose("/lang/<string:locale>")
