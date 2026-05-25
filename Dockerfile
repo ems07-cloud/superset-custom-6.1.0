@@ -234,7 +234,7 @@ RUN --mount=type=cache,target=${SUPERSET_HOME}/.cache/uv \
     uv pip install -e .
 
 RUN --mount=type=cache,target=${SUPERSET_HOME}/.cache/uv \
-    uv pip install clickhouse-connect
+    uv pip install clickhouse-connect==1.0.1
 
 RUN python -m compileall /app/superset
 
