@@ -78,6 +78,52 @@ dashboard is published with their role. Without access they get 404
 
 `/welcome/` keeps the standard Home page.
 
+## Production-like local stack
+
+A single-host stack that mirrors a real deployment — Postgres metadata
+DB, Redis cache + Celery broker, gunicorn web, Celery worker and beat
+— lives in `docker-compose-prod-local.yml`. It builds the `lean`
+image, persists Postgres / Redis / Superset home into named volumes,
+and wires the custom environment variables (including
+`SUPERSET_DEFAULT_DASHBOARD_ID`) through `docker/.env.prod-local`.
+
+First-time bootstrap:
+
+```bash
+cp docker/.env.prod-local.example docker/.env.prod-local
+# edit SUPERSET_SECRET_KEY and *_PASSWORD inside docker/.env.prod-local
+docker compose -f docker-compose-prod-local.yml --env-file docker/.env.prod-local up -d
+```
+
+That single command builds the image, starts Postgres + Redis, runs
+migrations, creates the `admin` user (password = `ADMIN_PASSWORD` from
+the env file), optionally loads example dashboards, then launches
+gunicorn + Celery worker + beat. Web UI: `http://localhost:8088`.
+
+Subsequent starts re-use the existing volumes and skip admin / example
+loading thanks to a sentinel file in `superset_home`.
+
+To wipe everything and start clean:
+
+```bash
+docker compose -f docker-compose-prod-local.yml --env-file docker/.env.prod-local down -v
+```
+
+What is enabled out of the box:
+
+- Postgres 17 as the metadata DB, persisted to the `db_data` volume.
+- Redis 7 with AOF persistence for cache + Celery broker + async query
+  events, persisted to `redis_data`.
+- Flask-Caching wired to Redis for chart data, filter state, explore
+  form data and thumbnails.
+- SQL Lab results stored in Redis (`RESULTS_BACKEND`), so async
+  queries work across worker restarts.
+- `GLOBAL_ASYNC_QUERIES` feature flag enabled (polling transport).
+- Celery worker (concurrency configurable via `CELERYD_CONCURRENCY`)
+  and Celery beat for scheduled tasks / alerts.
+- Healthchecks on every service so dependent containers wait for
+  Postgres and Redis to be ready before booting.
+
 ## Applying the patch series
 
 ```bash
