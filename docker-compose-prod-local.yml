@@ -1,0 +1,161 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+# ---------------------------------------------------------------------
+# Production-like single-host stack for the custom 6.1.0 build.
+#
+# Spins up Postgres + Redis + Superset (gunicorn) + Celery worker + beat
+# behind one compose file, mimicking a real deployment but pinned to a
+# single machine.
+#
+# Quick start:
+#   cp docker/.env.prod-local.example docker/.env.prod-local
+#   # edit SUPERSET_SECRET_KEY and *_PASSWORD inside .env.prod-local
+#   docker compose -f docker-compose-prod-local.yml --env-file docker/.env.prod-local up -d
+#
+# Web UI: http://localhost:8088 (admin / value of ADMIN_PASSWORD).
+# ---------------------------------------------------------------------
+
+x-superset-image: &superset-image
+  image: ${SUPERSET_IMAGE:-superset-custom:6.1.0-prod-local}
+  pull_policy: missing
+  build:
+    context: .
+    target: lean
+    cache_from:
+      - apache/superset-cache:3.10-slim-trixie
+
+x-superset-env: &superset-env
+  env_file:
+    - path: docker/.env.prod-local
+      required: true
+
+x-superset-volumes: &superset-volumes
+  - ./docker:/app/docker:ro
+  - superset_home:/app/superset_home
+
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: superset_prod_redis
+    restart: unless-stopped
+    command: ["redis-server", "--save", "60", "1", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  db:
+    image: postgres:17-alpine
+    container_name: superset_prod_db
+    restart: unless-stopped
+    <<: *superset-env
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - ./docker/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  superset-init:
+    <<: [*superset-image, *superset-env]
+    container_name: superset_prod_init
+    command: ["bash", "/app/docker/prod-local-init.sh"]
+    user: root
+    restart: "no"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes: *superset-volumes
+    healthcheck:
+      disable: true
+
+  superset:
+    <<: [*superset-image, *superset-env]
+    container_name: superset_prod_app
+    command: ["/app/docker/docker-bootstrap.sh", "app-gunicorn"]
+    user: root
+    restart: unless-stopped
+    ports:
+      - "${SUPERSET_PORT:-8088}:8088"
+    depends_on:
+      superset-init:
+        condition: service_completed_successfully
+    volumes: *superset-volumes
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8088/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+
+  superset-worker:
+    <<: [*superset-image, *superset-env]
+    container_name: superset_prod_worker
+    # docker-bootstrap.sh skips installing the postgres extras for workers,
+    # so make sure psycopg2 is present before invoking celery. The install
+    # is a no-op on images already built with `.[postgres]`.
+    command:
+      - bash
+      - -c
+      - >-
+        uv pip install -q .[postgres]
+        && /app/docker/docker-bootstrap.sh worker
+    user: root
+    restart: unless-stopped
+    depends_on:
+      superset-init:
+        condition: service_completed_successfully
+    volumes: *superset-volumes
+    healthcheck:
+      test:
+        - "CMD-SHELL"
+        - "celery -A superset.tasks.celery_app:app inspect ping -d celery@$$HOSTNAME"
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  superset-worker-beat:
+    <<: [*superset-image, *superset-env]
+    container_name: superset_prod_beat
+    command:
+      - bash
+      - -c
+      - >-
+        uv pip install -q .[postgres]
+        && /app/docker/docker-bootstrap.sh beat
+    user: root
+    restart: unless-stopped
+    depends_on:
+      superset-init:
+        condition: service_completed_successfully
+    volumes: *superset-volumes
+    healthcheck:
+      disable: true
+
+volumes:
+  db_data:
+  redis_data:
+  superset_home:

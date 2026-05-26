@@ -119,6 +119,8 @@ docker/requirements-local.txt
 
 cache/
 docker/*local*
+!docker/.env.prod-local.example
+!docker/prod-local-init.sh
 docker/superset-websocket/config.json
 docker-compose.override.yml
 

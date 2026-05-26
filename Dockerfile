@@ -236,6 +236,9 @@ RUN --mount=type=cache,target=${SUPERSET_HOME}/.cache/uv \
 RUN --mount=type=cache,target=${SUPERSET_HOME}/.cache/uv \
     uv pip install clickhouse-connect==1.0.1
 
+RUN --mount=type=cache,target=${SUPERSET_HOME}/.cache/uv \
+    uv pip install .[postgres]
+
 RUN python -m compileall /app/superset
 
 USER superset
